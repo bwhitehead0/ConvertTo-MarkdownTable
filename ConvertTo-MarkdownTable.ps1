@@ -27,6 +27,8 @@ function ConvertTo-MarkdownTable {
     $functionName = $MyInvocation.MyCommand
     $htmlPipe = "&#124;"
     [string[]]$separaterList = @()
+    [string[]]$rowData = @()
+    [string[]]$markdownTable = @()
 
 
     # build property list
@@ -42,15 +44,48 @@ function ConvertTo-MarkdownTable {
     $propertyList = $propertyList | Select-Object -Unique
     
     # build header
+    Write-Verbose "$functionName Building header row."
     $header = "| " + ($propertyList -join " `| ") + " |"
 
     # build header separater
+    Write-Verbose "$functionName Building separater row."
     foreach ( $i in $propertyList ) {
         # add hyphens using padleft to an empty string, based on length of each property in the list
         $separaterList += $("").padleft($i.length,"-")
     }
 
     $separater = "| " + ($separaterList -join " `| ") + " |"
+
+    # build each row of data
+        <#
+        try {
+        $y = $x | Select-Object -ExpandProperty "blah" -ea SilentlyContinue
+        } catch {
+        $y = $null
+        }
+
+        or
+        $v="propertyName"
+        $x."$v"
+
+        returns null if empty, or value of property
+        #>
+        Write-Verbose "$functionName Building table rows."
+        foreach ( $object in $InputObject ) {
+            $tempDataList = @()
+            foreach ( $p in $propertyList ) {
+                $tempDataList += $object."$p"
+            }
+            $rowData += "| " + ($tempDataList -join " `| ") + " |"
+        }
+
+        # build final markdown table
+        $markdownTable += $header
+        $markdownTable += $separater
+        $markdownTable += $rowData
+
+        # return markdown table
+        $markdownTable
 
     <#
     function flow:
