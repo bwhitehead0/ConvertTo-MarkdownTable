@@ -24,7 +24,10 @@ function ConvertTo-MarkdownTable {
         [Object[]]$InputObject,
 
         [Parameter(Mandatory = $false)]
-        [Switch]$Jira
+        [Switch]$Jira,
+
+        [Parameter(Mandatory = $false)]
+        [Switch]$ReplaceNewline
     )
 
     $functionName = $MyInvocation.MyCommand
@@ -32,6 +35,13 @@ function ConvertTo-MarkdownTable {
     [string[]]$separatorList = @()
     [string[]]$rowData = @()
     [string[]]$markdownTable = @()
+
+    if ( $Jira ) {
+        Write-Verbose "$functionName Using Jira-style column headers."
+    }
+    if ( $ReplaceNewline ) {
+        Write-Verbose "$functionName Replacing newlines with HTML <br>."
+    }
 
     # figure out how many pipes need to separate column headers based on user input
     if ( $Jira ) {
@@ -91,6 +101,11 @@ function ConvertTo-MarkdownTable {
 
                 # remove any trailing CRLF in each property value
                 $tempData = [string]$tempData.trim()
+
+                # replace CRLF with html <br>
+                if ( $ReplaceNewline ) {
+                    $tempData = $tempData -replace "`r`n","<br>"
+                }
                 
                 $tempDataList += $tempData
             }
