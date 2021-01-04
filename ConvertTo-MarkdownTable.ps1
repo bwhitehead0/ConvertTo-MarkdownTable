@@ -21,14 +21,24 @@ function ConvertTo-MarkdownTable {
         [Parameter(Mandatory = $true,
         ValueFromPipeline = $true)]
         [ValidateNotNullOrEmpty()]
-        [Object[]]$InputObject
+        [Object[]]$InputObject,
+
+        [Parameter(Mandatory = $false)]
+        [Switch]$Jira
     )
 
     $functionName = $MyInvocation.MyCommand
     $htmlPipe = "&#124;"
-    [string[]]$separaterList = @()
+    [string[]]$separatorList = @()
     [string[]]$rowData = @()
     [string[]]$markdownTable = @()
+
+    # figure out how many pipes need to separate column headers based on user input
+    if ( $Jira ) {
+        $headerSeparator = "||"
+    } else {
+        $headerSeparator = "|"
+    }
 
 
     # build property list
@@ -41,73 +51,61 @@ function ConvertTo-MarkdownTable {
         Write-Verbose "$functionName Adding property name $property"
     }
 
-    Write-Verbose "$functionName Found $($propertyList.count) properties."
-
     $propertyList = $propertyList | Select-Object -Unique
+
+    Write-Verbose "$functionName Found $($propertyList.count) properties."
     
     # build header
     Write-Verbose "$functionName Building header row."
-    $header = "| " + ($propertyList -join " `| ") + " |"
+    $header = "$headerSeparator " + ($propertyList -join " $headerSeparator ") + " $headerSeparator"
 
-    # build header separater
-    Write-Verbose "$functionName Building separater row."
-    foreach ( $i in $propertyList ) {
-        # add hyphens using padleft to an empty string, based on length of each property in the list
-        $separaterList += $("").padleft($i.length,"-")
+    # build header separator
+    if ( !($Jira) ) {
+        Write-Verbose "$functionName Building separator row."
+        foreach ( $i in $propertyList ) {
+            # add hyphens using padleft to an empty string, based on length of each property in the list
+            # needs to be minimum of 3 length
+            if ( $i.length -lt 3 ) {
+                $separatorLength = 3
+            } else {
+                $separatorLength = $i.length
+            }
+            $separatorList += $("").padleft($separatorLength,"-")
+        }
+        $separator = "| " + ($separatorList -join " `| ") + " |"
+    } else {
+        Write-Verbose "$functionName User specified -Jira parameter, not building separator row."
     }
 
-    $separater = "| " + ($separaterList -join " `| ") + " |"
-
     # build each row of data
-        <#
-        try {
-        $y = $x | Select-Object -ExpandProperty "blah" -ea SilentlyContinue
-        } catch {
-        $y = $null
-        }
-
-        or
-        $v="propertyName"
-        $x."$v"
-
-        returns null if empty, or value of property
-        #>
         Write-Verbose "$functionName Building table rows."
         foreach ( $object in $InputObject ) {
             $tempDataList = @()
             foreach ( $p in $propertyList ) {
-                $tempData = $object."$p"
+                [string]$tempData = $object."$p"
+                if ( $tempData -match '\|' ) {
+                    # replace '|' in property values with html code
+                    Write-Verbose "$functionName replacing '|' with $htmlPipe in value [$tempData]."
+                    $tempData = $tempData -replace "\|",$htmlPipe
+                }
+
+                # remove any trailing CRLF in each property value
+                $tempData = [string]$tempData.trim()
+                
                 $tempDataList += $tempData
-                # replace '|' in property values with html code
-                $tempDataList -replace "\|",$htmlPipe
-                Write-Verbose "$functionName adding property value $tempData"
             }
             $rowData += "| " + ($tempDataList -join " `| ") + " |"
         }
 
         # build final markdown table
+        Write-Verbose "$functionName Building final table."
         $markdownTable += $header
-        $markdownTable += $separater
+        if ( !($Jira) ) {
+            $markdownTable += $separator
+        }
         $markdownTable += $rowData
 
         # return markdown table
+        Write-Verbose "$functionName Returning markdown table."
         $markdownTable
-
-    <#
-    function flow:
-    
-        1.  get inputobject. can't be null.
-            a.  should be object w/ properties
-        2.  get property names, these are our column headers
-        3.  build header string from property names
-        4.  foreach thru object, build a new string for table row with each property
-            a.  parse each property value, substitute existing '|' characters with html code
-        
-    table format:
-        | Syntax | Description |
-        | --- | ----------- |
-        | Header | Title |
-        | Paragraph | Text |
-    #>
-
 }
