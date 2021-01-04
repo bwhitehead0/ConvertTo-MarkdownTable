@@ -36,7 +36,9 @@ function ConvertTo-MarkdownTable {
     $propertyList = @()
 
     foreach ( $i in $InputObject ) {
-        $propertyList += $i.psobject.properties.name
+        $property = $i.psobject.properties.name
+        $propertyList += $property
+        Write-Verbose "$functionName Adding property name $property"
     }
 
     Write-Verbose "$functionName Found $($propertyList.count) properties."
@@ -74,7 +76,11 @@ function ConvertTo-MarkdownTable {
         foreach ( $object in $InputObject ) {
             $tempDataList = @()
             foreach ( $p in $propertyList ) {
-                $tempDataList += $object."$p"
+                $tempData = $object."$p"
+                $tempDataList += $tempData
+                # replace '|' in property values with html code
+                $tempDataList -replace "\|",$htmlPipe
+                Write-Verbose "$functionName adding property value $tempData"
             }
             $rowData += "| " + ($tempDataList -join " `| ") + " |"
         }
