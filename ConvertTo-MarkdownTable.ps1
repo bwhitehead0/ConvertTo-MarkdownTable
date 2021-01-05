@@ -1,21 +1,34 @@
 function ConvertTo-MarkdownTable {
-    <#
-    .SYNOPSIS
-    Converts an object into a markdown table. Similar to ConvertTo-Html or ConvertTo-Csv.
+   <#
+   .SYNOPSIS
+   Converts an object into a markdown table. Similar to ConvertTo-Html or ConvertTo-Csv.
+   
+   .DESCRIPTION
+   Converts an object into a markdown table. Similar to ConvertTo-Html or ConvertTo-Csv.
+   
+   .PARAMETER InputObject
+   Object to convert to markdown table. Object properties are column headers.
+   
+   .PARAMETER Jira
+   If specified, uses Jira-style table column headers.
+   
+   .PARAMETER ReplaceNewline
+   If specified, replaces carriage return/line feed with HTML <br> tag.
+   
+   .EXAMPLE
+   ConvertTo-MarkdownTable -InputObject ( Get-ChildItem )
 
-    .DESCRIPTION
-    Converts an object into a markdown table. Similar to ConvertTo-Html or ConvertTo-Csv.
+   .EXAMPLE
+   $result = Invoke-Sqlcmd -ServerInstance "databaseServer" -Database "testDB" -Query "select * from table"
+   ConvertTo-MarkdownTable -InputObject $result -Jira -Verbose
+   
+   .NOTES
+   Converts a PowerShell object to a Markdown table. Better than Atlassian's Format-Jira.
 
-    .PARAMETER InputObject
-    Object to convert to markdown table. Properties are column headers.
+   Will optionally convert CRLF to HTML <br> tags (for example, for use with GitHub), or use double pipes ("||") as the header column separator for use with Atlassian Jira or similar systems.
+   #>
 
-    .EXAMPLE
-    An example
-
-    .NOTES
-    General notes
-    #>
-
+    
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true,
