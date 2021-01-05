@@ -28,7 +28,7 @@ $result = Invoke-Sqlcmd -ServerInstance "databaseServer" -Database "testDB" -Que
 ConvertTo-MarkdownTable -InputObject $result -Jira -Verbose
 ```
 
-<H2>Other Notes</H@>
+<H2>Other Notes</H2>
 Converts a PowerShell object to a Markdown table. Better than Atlassian's Format-Jira.
 
 Will optionally convert `CRLF` to HTML `<br>` tags (for example, for use with GitHub), or use double pipes ("||") as the header column separator for use with Atlassian Jira or similar systems.
