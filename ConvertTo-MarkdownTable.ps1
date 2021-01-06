@@ -106,12 +106,16 @@ function ConvertTo-MarkdownTable {
                 [string]$tempData = $object."$p"
                 if ( $tempData -match '\|' ) {
                     # replace '|' in property values with html code
-                    Write-Verbose "$functionName replacing '|' with $htmlPipe in value [$tempData]."
+                    Write-Verbose "$functionName Replacing '|' with $htmlPipe in value [$tempData]."
                     $tempData = $tempData -replace "\|",$htmlPipe
                 }
 
                 # remove any trailing CRLF in each property value
-                $tempData = [string]$tempData.trim()
+                if ( $null -notlike $tempData ) {
+                    # data in this field
+                    Write-Verbose "$functionName Trimming trailing CRLF from property $p."
+                    $tempData = [string]$tempData.trim()
+                }
 
                 # replace CRLF with html <br>
                 if ( $ReplaceNewline ) {
