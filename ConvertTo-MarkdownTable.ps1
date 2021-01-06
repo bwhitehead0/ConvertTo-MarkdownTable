@@ -27,7 +27,6 @@ function ConvertTo-MarkdownTable {
 
    Will optionally convert CRLF to HTML <br> tags (for example, for use with GitHub), or use double pipes ("||") as the header column separator for use with Atlassian Jira or similar systems.
    #>
-
     
     [CmdletBinding()]
     param (
@@ -62,7 +61,6 @@ function ConvertTo-MarkdownTable {
     } else {
         $headerSeparator = "|"
     }
-
 
     # build property list
     Write-Verbose "$functionName Parsing properties."
