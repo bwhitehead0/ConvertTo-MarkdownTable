@@ -20,7 +20,7 @@ Describe "ConvertTo-MarkdownTable" {
         }
     }
     Context "-ReplaceNewline provided" {
-        It "replaces value CRLF with HTML <br>" {
+        It 'replaces val CRLF with HTML line break' {
             $customObject = [PSCustomObject]@{
                 a="multi`r`nline`r`ntext"
                 c=3
